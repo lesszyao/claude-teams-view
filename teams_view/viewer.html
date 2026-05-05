@@ -125,10 +125,72 @@ header {
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid var(--border-subtle);
   padding: 10px 20px;
-  display: flex; align-items: center; gap: 16px;
+  display: flex; flex-direction: column;
+  gap: 8px;
   flex-shrink: 0;
-  height: 52px;
 }
+.header-row {
+  display: flex; align-items: center; gap: 16px;
+  min-height: 32px;
+}
+.header-row.paths-row {
+  min-height: 22px;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 7px;
+}
+.header-row.paths-row.empty { display: none; }
+
+.path-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px 3px 10px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+  max-width: 100%;
+  min-width: 0;
+}
+.path-pill .label {
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 9.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.path-pill .path-text {
+  color: var(--fg);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  direction: rtl;
+  text-align: left;
+}
+.path-pill .path-text bdi { direction: ltr; unicode-bidi: bidi-override; }
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--fg-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.icon-btn:hover { background: var(--bg-overlay); color: var(--fg); border-color: var(--border-subtle); }
+.icon-btn.copied { color: var(--success); border-color: rgba(34,197,94,0.3); background: var(--success-soft); }
+.icon-btn svg { width: 13px; height: 13px; }
+.path-pill.empty {
+  color: var(--fg-faint);
+  font-style: italic;
+  opacity: 0.7;
+}
+.path-pill.empty .path-text { color: var(--fg-faint); }
 .brand-block { display: flex; align-items: center; gap: 10px; }
 .brand-logo {
   width: 26px; height: 26px;
@@ -628,6 +690,24 @@ aside {
 }
 .duration svg { width: 11px; height: 11px; opacity: 0.7; }
 
+.trace-time {
+  color: var(--fg-subtle);
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xs);
+  white-space: nowrap;
+}
+.trace-time svg { width: 11px; height: 11px; opacity: 0.7; }
+.trace-time .delta {
+  color: var(--fg-faint);
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
 .trace-body {
   display: none;
   border-top: 1px solid var(--border);
@@ -641,7 +721,27 @@ aside {
   padding: 0 14px;
   background: var(--bg-raised);
   border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
 }
+.trace-tabs .tab-spacer { flex: 1; }
+.trace-tabs .copy-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  margin: 4px 0;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.trace-tabs .copy-btn:hover { background: var(--bg-pressed); color: var(--fg); border-color: var(--border-strong); }
+.trace-tabs .copy-btn.copied { color: var(--success); border-color: rgba(34,197,94,0.3); background: var(--success-soft); }
+.trace-tabs .copy-btn svg { width: 11px; height: 11px; }
 .tab {
   padding: 9px 14px;
   cursor: pointer;
@@ -780,10 +880,42 @@ aside {
   min-width: 0;
 }
 .mb-time {
-  color: var(--fg-faint);
-  font-size: 10px;
+  color: var(--fg-subtle);
+  font-size: 10.5px;
+  font-family: var(--font-mono);
   white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 7px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xs);
 }
+.mb-time svg { width: 10px; height: 10px; opacity: 0.7; }
+.mb-time .delta {
+  color: var(--fg-faint);
+  font-size: 9.5px;
+}
+.mb-text-actions {
+  display: flex; justify-content: flex-end;
+  margin-bottom: 6px;
+}
+.mb-text-actions .copy-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.mb-text-actions .copy-btn:hover { background: var(--bg-pressed); color: var(--fg); border-color: var(--border-strong); }
+.mb-text-actions .copy-btn.copied { color: var(--success); border-color: rgba(34,197,94,0.3); background: var(--success-soft); }
+.mb-text-actions .copy-btn svg { width: 11px; height: 11px; }
 .mb-protocol-tag {
   background: var(--bg-pressed);
   color: var(--fg-subtle);
@@ -808,7 +940,9 @@ aside {
   color: var(--fg-muted);
   line-height: 1.65;
   font-size: 11.5px;
+  cursor: text;
 }
+.mb-event-row { cursor: pointer; }
 .mb-event.open .mb-text { display: block; }
 .mb-trunc-note {
   color: var(--fg-faint);
@@ -856,28 +990,40 @@ aside {
 <body>
 
 <header>
-  <div class="brand-block">
-    <span class="brand-logo" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/>
-        <path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/>
-        <path d="M14 19c.3-2.3 2.4-4 4.5-4S22 16.7 22 19"/>
-      </svg>
-    </span>
-    <span class="brand">teams-view</span>
+  <div class="header-row">
+    <div class="brand-block">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/>
+          <path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/>
+          <path d="M14 19c.3-2.3 2.4-4 4.5-4S22 16.7 22 19"/>
+        </svg>
+      </span>
+      <span class="brand">teams-view</span>
+    </div>
+    <span class="team-name empty" id="team-name">no team detected yet</span>
+    <div class="stats">
+      <span class="conn" id="conn-pill" role="status" aria-live="polite">
+        <span class="conn-dot" id="conn-dot"></span>
+        <span id="conn-label">offline</span>
+      </span>
+      <span class="stat-divider">·</span>
+      <span class="stat-item"><b id="agent-count">0</b> agents</span>
+      <span class="stat-divider">·</span>
+      <span class="stat-item"><b id="total-requests">0</b> requests</span>
+      <span class="stat-divider">·</span>
+      <span class="stat-item"><b id="total-tokens">0</b> tokens</span>
+    </div>
   </div>
-  <span class="team-name empty" id="team-name">no team detected yet</span>
-  <div class="stats">
-    <span class="conn" id="conn-pill" role="status" aria-live="polite">
-      <span class="conn-dot" id="conn-dot"></span>
-      <span id="conn-label">offline</span>
+  <div class="header-row paths-row empty" id="paths-row">
+    <span class="path-pill empty" id="config-pill" title="Team config file">
+      <span class="label">config</span>
+      <span class="path-text" id="config-path">—</span>
     </span>
-    <span class="stat-divider">·</span>
-    <span class="stat-item"><b id="agent-count">0</b> agents</span>
-    <span class="stat-divider">·</span>
-    <span class="stat-item"><b id="total-requests">0</b> requests</span>
-    <span class="stat-divider">·</span>
-    <span class="stat-item"><b id="total-tokens">0</b> tokens</span>
+    <span class="path-pill empty" id="mailbox-pill" title="Per-member inbox JSON files">
+      <span class="label">mailbox</span>
+      <span class="path-text" id="mailbox-path">—</span>
+    </span>
   </div>
 </header>
 
@@ -922,10 +1068,14 @@ const ICONS = {
   arrowDownLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7 7 17"/><path d="M17 17H7V7"/></svg>',
   arrowUpRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>',
   cog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1c0 .7.4 1.3 1 1.5h.1a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg>',
 };
 
 const state = {
   teamName: null,
+  teamConfigPath: null,
+  teamMailboxDir: null,
   agents: {},          // name -> meta
   traces: {},          // name -> [record]
   mailbox: {},         // name -> [event]
@@ -965,6 +1115,71 @@ function avatarInitial(name) {
   // Use first alphanumeric char (skip dashes/dots), fallback to '?'
   const m = String(name || '').match(/[A-Za-z0-9]/);
   return (m ? m[0] : '?').toUpperCase();
+}
+
+// Format an ISO timestamp into HH:MM:SS in the user's local timezone.
+function fmtTimeOfDay(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+}
+// Compact relative duration ("+2.3s", "+1m12s", "+3h").
+function fmtRelative(prevIso, curIso) {
+  if (!prevIso || !curIso) return '';
+  const a = new Date(prevIso).getTime();
+  const b = new Date(curIso).getTime();
+  if (!isFinite(a) || !isFinite(b)) return '';
+  let s = (b - a) / 1000;
+  if (s < 0) return '';
+  if (s < 0.1) return '+0s';
+  if (s < 60) return '+' + s.toFixed(s < 10 ? 1 : 0) + 's';
+  const m = Math.floor(s / 60); s -= m * 60;
+  if (m < 60) return '+' + m + 'm' + Math.round(s) + 's';
+  const h = Math.floor(m / 60);
+  return '+' + h + 'h' + (m % 60) + 'm';
+}
+
+// ---- clipboard ----
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) { /* fallthrough */ }
+  // Legacy fallback for non-https / older browsers.
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    ta.style.pointerEvents = 'none';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (_) {
+    return false;
+  }
+}
+function flashCopied(btn) {
+  const html = btn.innerHTML;
+  btn.classList.add('copied');
+  if (btn.dataset.copyLabel) {
+    btn.innerHTML = ICONS.check + '<span>Copied</span>';
+  } else {
+    btn.innerHTML = ICONS.check;
+  }
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = html;
+  }, 1100);
 }
 
 // --- sidebar ---
@@ -1057,6 +1272,9 @@ function renderDetail() {
   const color = COLOR_MAP[m.color] || 'var(--accent)';
   const initial = avatarInitial(name);
 
+  // Per-member mailbox file path, when known.
+  const memberMailboxFile = state.teamMailboxDir ? `${state.teamMailboxDir.replace(/\/$/, '')}/${name}.json` : null;
+
   const idCard = `
     <div class="id-card">
       <div class="id-card-row1">
@@ -1073,6 +1291,7 @@ function renderDetail() {
         ${m.cwd ? `<span class="meta-pill"><span class="label">cwd</span><span class="value">${escapeHtml(m.cwd)}</span></span>` : ''}
         <span class="meta-pill"><span class="label">requests</span><span class="value">${m.request_count || 0}</span></span>
         <span class="meta-pill token-pill"><span class="label">tokens</span><span class="value">${fmtTokens((m.total_input_tokens||0) + (m.total_output_tokens||0))}</span><span style="color:var(--fg-faint);font-size:9.5px">(${fmtTokens(m.total_input_tokens||0)}↓ / ${fmtTokens(m.total_output_tokens||0)}↑)</span></span>
+        ${memberMailboxFile ? `<span class="meta-pill" id="member-inbox-pill" title="${escapeHtml(memberMailboxFile)}"><span class="label">inbox</span><span class="value" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left"><bdi>${escapeHtml(memberMailboxFile)}</bdi></span><button class="icon-btn" type="button" data-copy-text="${escapeHtml(memberMailboxFile)}" title="Copy inbox path" aria-label="Copy inbox path">${ICONS.copy}</button></span>` : ''}
       </div>
     </div>
   `;
@@ -1108,7 +1327,10 @@ function renderDetail() {
   // Build a unified, time-sorted timeline of trace records and mailbox events.
   const timeline = buildTimeline(name);
   const timelineHtml = '<div class="traces">' +
-    timeline.map(item => item.kind === 'trace' ? renderTrace(item.record, item.idx, name) : renderMailbox(item.event, name)).join('') +
+    timeline.map(item => item.kind === 'trace'
+      ? renderTrace(item.record, item.idx, name, item.deltaFromPrev)
+      : renderMailbox(item.event, name, item.deltaFromPrev)
+    ).join('') +
     '</div>';
 
   detail.innerHTML = idCard + taskHtml + filterBar + timelineHtml;
@@ -1144,7 +1366,10 @@ function renderDetail() {
 function reRenderTimelineOnly(name) {
   const tl = buildTimeline(name);
   const html = '<div class="traces">' +
-    tl.map(item => item.kind === 'trace' ? renderTrace(item.record, item.idx, name) : renderMailbox(item.event, name)).join('') +
+    tl.map(item => item.kind === 'trace'
+      ? renderTrace(item.record, item.idx, name, item.deltaFromPrev)
+      : renderMailbox(item.event, name, item.deltaFromPrev)
+    ).join('') +
     '</div>';
   const el = $('.traces');
   if (el) el.outerHTML = html;
@@ -1163,6 +1388,12 @@ function buildTimeline(name) {
     items.push({ kind: 'mailbox', event: ev, ts: ev.timestamp || '' });
   }
   items.sort((a, b) => (a.ts || '').localeCompare(b.ts || ''));
+  // Attach delta-from-previous so users can see how long *between* events.
+  let prevTs = '';
+  for (const it of items) {
+    it.deltaFromPrev = fmtRelative(prevTs, it.ts);
+    if (it.ts) prevTs = it.ts;
+  }
   if (state.filterText) {
     const q = state.filterText.toLowerCase();
     return items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
@@ -1170,7 +1401,7 @@ function buildTimeline(name) {
   return items;
 }
 
-function renderMailbox(ev, owner) {
+function renderMailbox(ev, owner, deltaFromPrev) {
   const dirIn = ev.direction === 'in';
   const cls = [
     'mb-event',
@@ -1185,7 +1416,8 @@ function renderMailbox(ev, owner) {
     ? `<span>from</span><span class="mb-peer">${escapeHtml(ev.peer)}</span>`
     : `<span>to</span><span class="mb-peer">${escapeHtml(ev.peer)}</span>`;
   const summary = ev.summary || (ev.is_protocol ? `[${ev.protocol_type}]` : ev.text.slice(0, 200).replace(/\s+/g, ' '));
-  const time = (ev.timestamp || '').slice(11, 19);
+  const timeOfDay = fmtTimeOfDay(ev.timestamp);
+  const isoFull = ev.timestamp ? new Date(ev.timestamp).toLocaleString() : '';
   const protoTag = ev.is_protocol ? `<span class="mb-protocol-tag">${escapeHtml(ev.protocol_type || 'protocol')}</span>` : '';
   const truncNote = ev.text_truncated
     ? `<div class="mb-trunc-note">[truncated; full length ${ev.text_full_length} chars]</div>`
@@ -1194,15 +1426,15 @@ function renderMailbox(ev, owner) {
     ? `<span class="color-dot" style="background:${COLOR_MAP[ev.color] || 'var(--fg-faint)'}"></span>`
     : '';
   return `
-    <div class="${cls} ${open}" data-key="${escapeHtml(key)}" tabindex="0" role="button">
+    <div class="${cls} ${open}" data-key="${escapeHtml(key)}" data-mb-text="${escapeHtml(ev.text || '')}" tabindex="0" role="button">
       <div class="mb-event-row">
         <span class="mb-icon">${icon}</span>
         <span class="mb-arrow">${peerLabel}${colorDot}</span>
         <span class="mb-summary">${escapeHtml(summary)}</span>
         ${protoTag}
-        <span class="mb-time">${escapeHtml(time)}</span>
+        <span class="mb-time" title="${escapeHtml(isoFull)}">${ICONS.clock}<span>${escapeHtml(timeOfDay)}</span>${deltaFromPrev ? `<span class="delta">${escapeHtml(deltaFromPrev)}</span>` : ''}</span>
       </div>
-      <div class="mb-text">${escapeHtml(ev.text)}${truncNote}</div>
+      <div class="mb-text"><div class="mb-text-actions"><button class="copy-btn" type="button" data-copy-mb title="Copy message text to clipboard" aria-label="Copy message">${ICONS.copy}<span data-copy-label>Copy</span></button></div><div class="mb-text-body">${escapeHtml(ev.text)}${truncNote}</div></div>
     </div>
   `;
 }
@@ -1215,14 +1447,26 @@ function hookMailboxEvents(owner) {
       else state.expanded.add(key);
       el.classList.toggle('open');
     };
-    el.addEventListener('click', toggle);
+    // Only toggle on the header row click — clicks inside the expanded body
+    // (e.g. starting a text-selection drag, hitting the copy button) must
+    // NOT collapse the message.
+    const headRow = el.querySelector('.mb-event-row');
+    if (headRow) headRow.addEventListener('click', toggle);
     el.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
+    const cb = el.querySelector('[data-copy-mb]');
+    if (cb) {
+      cb.addEventListener('click', async e => {
+        e.stopPropagation();
+        const text = el.dataset.mbText || '';
+        if (await copyToClipboard(text)) flashCopied(cb);
+      });
+    }
   });
 }
 
-function renderTrace(rec, idx, agent) {
+function renderTrace(rec, idx, agent, deltaFromPrev) {
   const open = state.expanded.has(rec.request_id) ? 'open' : '';
   const status = rec.response?.status || 0;
   const sCls = status >= 500 ? 's5' : status >= 400 ? 's4' : status >= 200 ? 's2' : '';
@@ -1234,9 +1478,11 @@ function renderTrace(rec, idx, agent) {
   const path = rec.request?.path || '';
   const tabKey = agent + '|' + rec.request_id;
   const activeTab = state.activeTab[tabKey] || 'response';
+  const timeOfDay = fmtTimeOfDay(rec.timestamp);
+  const isoFull = rec.timestamp ? new Date(rec.timestamp).toLocaleString() : '';
 
   return `
-    <div class="trace ${open}" data-rid="${escapeHtml(rec.request_id)}">
+    <div class="trace ${open}" data-rid="${escapeHtml(rec.request_id)}" data-agent="${escapeHtml(agent)}">
       <div class="trace-head" tabindex="0" role="button" aria-expanded="${open ? 'true' : 'false'}">
         <span class="trace-chev">${ICONS.chevronRight}</span>
         <span class="turn-num">#${idx + 1}</span>
@@ -1245,7 +1491,8 @@ function renderTrace(rec, idx, agent) {
         <span class="trace-path">${escapeHtml(path)}</span>
         ${model ? `<span class="trace-model">${escapeHtml(model.replace('claude-',''))}</span>` : ''}
         <span class="tokens">${tokenStr}</span>
-        <span class="duration">${ICONS.clock}${fmtDuration(rec.duration_ms)}</span>
+        ${timeOfDay ? `<span class="trace-time" title="${escapeHtml(isoFull)}">${ICONS.clock}<span>${escapeHtml(timeOfDay)}</span>${deltaFromPrev ? `<span class="delta">${escapeHtml(deltaFromPrev)}</span>` : ''}</span>` : ''}
+        <span class="duration" title="HTTP duration">${ICONS.clock}${fmtDuration(rec.duration_ms)}</span>
       </div>
       <div class="trace-body">
         <div class="trace-tabs" role="tablist">
@@ -1253,6 +1500,8 @@ function renderTrace(rec, idx, agent) {
           <span class="tab ${activeTab==='response' ? 'active' : ''}" data-tab="response" role="tab" tabindex="0">Response</span>
           <span class="tab ${activeTab==='headers' ? 'active' : ''}" data-tab="headers" role="tab" tabindex="0">Headers</span>
           <span class="tab ${activeTab==='raw' ? 'active' : ''}" data-tab="raw" role="tab" tabindex="0">Raw JSON</span>
+          <span class="tab-spacer"></span>
+          <button class="copy-btn" type="button" data-copy-pane="active" title="Copy this tab's content to clipboard" aria-label="Copy">${ICONS.copy}<span data-copy-label>Copy</span></button>
         </div>
         <div class="tab-pane ${activeTab==='request' ? 'active' : ''}" data-tab="request">${renderRequestPane(rec)}</div>
         <div class="tab-pane ${activeTab==='response' ? 'active' : ''}" data-tab="response">${renderResponsePane(rec)}</div>
@@ -1261,6 +1510,25 @@ function renderTrace(rec, idx, agent) {
       </div>
     </div>
   `;
+}
+
+// Compute the canonical text payload to put on the clipboard for a given tab.
+function copyTextForTrace(rec, tab) {
+  if (!rec) return '';
+  if (tab === 'request') {
+    return fmtJson(rec.request?.body, Number.MAX_SAFE_INTEGER) || '';
+  }
+  if (tab === 'response') {
+    return fmtJson(rec.response?.body, Number.MAX_SAFE_INTEGER) || '';
+  }
+  if (tab === 'headers') {
+    const obj = {
+      request_headers: rec.request?.headers || {},
+      response_headers: rec.response?.headers || {},
+    };
+    return JSON.stringify(obj, null, 2);
+  }
+  return JSON.stringify(rec, null, 2);
 }
 
 function renderRequestPane(rec) {
@@ -1361,6 +1629,29 @@ function hookTraceEvents(agent) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(e); }
       });
     });
+
+    const copyBtn = tr.querySelector('[data-copy-pane="active"]');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const tabName = state.activeTab[agent + '|' + rid] || 'response';
+        const records = state.traces[agent] || [];
+        const rec = records.find(r => r.request_id === rid);
+        const text = copyTextForTrace(rec, tabName);
+        if (await copyToClipboard(text)) flashCopied(copyBtn);
+      });
+    }
+  });
+
+  // Hook copy buttons placed in identity-card pills (e.g. inbox path).
+  $$('#detail [data-copy-text]').forEach(btn => {
+    if (btn.dataset.copyHooked) return;
+    btn.dataset.copyHooked = '1';
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const text = btn.dataset.copyText || '';
+      if (await copyToClipboard(text)) flashCopied(btn);
+    });
   });
 }
 
@@ -1382,6 +1673,50 @@ function renderHeaderStats() {
   }
   $('#total-requests').textContent = req;
   $('#total-tokens').textContent = fmtTokens(tok);
+
+  renderPathsRow();
+}
+
+function renderPathsRow() {
+  const row = $('#paths-row');
+  const cfgPill = $('#config-pill');
+  const mbPill = $('#mailbox-pill');
+  const cfgText = $('#config-path');
+  const mbText = $('#mailbox-path');
+  if (!row || !cfgPill || !mbPill || !cfgText || !mbText) return;
+
+  const cfg = state.teamConfigPath;
+  const mb = state.teamMailboxDir;
+  const hasAny = !!(cfg || mb);
+  row.classList.toggle('empty', !hasAny);
+
+  const renderPill = (pill, textEl, value, defaultLabel) => {
+    // Wipe any previously appended copy button so we never duplicate.
+    const oldBtn = pill.querySelector('.icon-btn');
+    if (oldBtn) oldBtn.remove();
+    if (value) {
+      pill.classList.remove('empty');
+      pill.title = value;
+      textEl.innerHTML = `<bdi>${escapeHtml(value)}</bdi>`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'icon-btn';
+      btn.title = 'Copy path';
+      btn.setAttribute('aria-label', 'Copy path');
+      btn.innerHTML = ICONS.copy;
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        if (await copyToClipboard(value)) flashCopied(btn);
+      });
+      pill.appendChild(btn);
+    } else {
+      pill.classList.add('empty');
+      pill.title = '';
+      textEl.textContent = defaultLabel;
+    }
+  };
+  renderPill(cfgPill, cfgText, cfg, 'no team detected');
+  renderPill(mbPill, mbText, mb, 'no team detected');
 }
 
 function setConn(live) {
@@ -1410,18 +1745,63 @@ function renderAll() {
 //   1. coalesce updates into one rAF frame
 //   2. snapshot scrollTop on the outer pane AND the currently-active tab pane
 //   3. restore both after re-rendering
+//   4. defer the re-render entirely while the user is dragging a text
+//      selection or has a non-collapsed selection inside #detail — otherwise
+//      `innerHTML = ...` blows away their selection mid-copy.
 let _pendingRender = { detail: false, members: false, header: false };
+let _detailMouseDown = false;
+
+function _detailHasActiveSelection() {
+  const sel = window.getSelection ? window.getSelection() : null;
+  if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false;
+  const detail = document.getElementById('detail');
+  if (!detail) return false;
+  try {
+    const r = sel.getRangeAt(0);
+    return detail.contains(r.commonAncestorContainer);
+  } catch (_) { return false; }
+}
+
+function _shouldDeferDetail() {
+  return _detailMouseDown || _detailHasActiveSelection();
+}
+
+function _flushPendingDetail() {
+  if (!_pendingRender.detail) return;
+  if (_shouldDeferDetail()) return;
+  _pendingRender.detail = false;
+  renderDetailPreservingScroll();
+}
+
 function scheduleRender(parts = ['detail']) {
   for (const p of parts) _pendingRender[p] = true;
   if (_pendingRender._scheduled) return;
   _pendingRender._scheduled = true;
   requestAnimationFrame(() => {
     _pendingRender._scheduled = false;
-    if (_pendingRender.detail)  { _pendingRender.detail = false;  renderDetailPreservingScroll(); }
     if (_pendingRender.members) { _pendingRender.members = false; renderMembers(); }
     if (_pendingRender.header)  { _pendingRender.header = false;  renderHeaderStats(); }
+    _flushPendingDetail();
   });
 }
+
+// Track when the user is actively selecting inside the detail pane so we can
+// hold off on re-rendering it until they release the mouse / clear selection.
+document.addEventListener('mousedown', e => {
+  const detail = document.getElementById('detail');
+  if (detail && e.target instanceof Node && detail.contains(e.target)) {
+    _detailMouseDown = true;
+  }
+}, true);
+document.addEventListener('mouseup', () => {
+  _detailMouseDown = false;
+  // If the selection is now collapsed we can flush; otherwise wait for it
+  // to clear via selectionchange.
+  if (!_detailHasActiveSelection()) _flushPendingDetail();
+}, true);
+document.addEventListener('selectionchange', () => {
+  if (!_shouldDeferDetail()) _flushPendingDetail();
+});
 
 function renderDetailPreservingScroll() {
   const detail = $('#detail');
@@ -1481,6 +1861,8 @@ async function loadSnapshot() {
     const r = await fetch('/snapshot');
     const data = await r.json();
     state.teamName = data.team_name;
+    state.teamConfigPath = data.team_config_path || null;
+    state.teamMailboxDir = data.team_mailbox_dir || null;
     state.agents = data.agents || {};
     state.traces = data.traces || {};
     state.mailbox = data.mailbox || {};
@@ -1512,7 +1894,10 @@ function handleEvent(msg) {
       break;
     case 'team_meta':
       state.teamName = msg.team_name;
-      scheduleRender(['header']);
+      if ('config_path' in msg) state.teamConfigPath = msg.config_path || null;
+      if ('mailbox_dir' in msg) state.teamMailboxDir = msg.mailbox_dir || null;
+      // The selected agent's identity card shows the inbox path → re-render detail too.
+      scheduleRender(['header', 'detail']);
       break;
     case 'agent_seen': {
       const m = msg.meta || { name: msg.agent };

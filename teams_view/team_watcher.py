@@ -151,20 +151,23 @@ class TeamWatcher:
         # team (handles users iterating through multiple teams in one session).
         candidates = sorted(all_teams, key=lambda x: x[1], reverse=True)
         active_team: dict[str, Any] | None = None
-        for _cfg, _mt, data in candidates:
+        active_cfg: Path | None = None
+        for cfg, _mt, data in candidates:
             members = data.get("members") or []
             member_names = {m.get("name") for m in members if isinstance(m, dict) and m.get("name")}
             if proxy_signal_names & member_names:
                 active_team = data
+                active_cfg = cfg
                 break
 
         # Pass 2 — medium signal: any team config touched after teams-view started.
         # Only the leader writes team configs, and the leader is our child, so a
         # fresh mtime means "this team belongs to this session".
         if active_team is None:
-            for _cfg, mt, data in candidates:
+            for cfg, mt, data in candidates:
                 if mt >= cutoff:
                     active_team = data
+                    active_cfg = cfg
                     break
 
         if active_team is None:
@@ -179,10 +182,17 @@ class TeamWatcher:
         team_name = active_team.get("name") or "unknown-team"
         lead_agent_id = active_team.get("leadAgentId")
         members = active_team.get("members") or []
+        config_path = str(active_cfg) if active_cfg else None
+        mailbox_dir = str(active_cfg.parent / "inboxes") if active_cfg else None
 
         # Publish team-level meta whenever active team changes.
         if team_name != self._last_active_team:
-            await self.store.set_team_meta(team_name, members)
+            await self.store.set_team_meta(
+                team_name,
+                members,
+                config_path=config_path,
+                mailbox_dir=mailbox_dir,
+            )
             self._last_active_team = team_name
             log.info(f"[TeamWatcher] active team: {team_name} ({len(members)} members)")
 

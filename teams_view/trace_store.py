@@ -78,6 +78,8 @@ class TraceStore:
         self._agents: dict[str, AgentMeta] = {}
         self._team_name: str | None = None
         self._team_members_meta: list[dict] = []  # snapshot from disk team config
+        self._team_config_path: str | None = None  # e.g. ~/.claude/teams/<team>/config.json
+        self._team_mailbox_dir: str | None = None  # e.g. ~/.claude/teams/<team>/inboxes
         self._lock = asyncio.Lock()
         self._sse_clients: list[Any] = []  # aiohttp StreamResponse list
 
@@ -116,11 +118,28 @@ class TraceStore:
                     meta.extra[k] = v
         await self._broadcast({"type": "agent_seen", "agent": name, "meta": asdict(self._agents[name])})
 
-    async def set_team_meta(self, team_name: str, members: list[dict]) -> None:
+    async def set_team_meta(
+        self,
+        team_name: str,
+        members: list[dict],
+        *,
+        config_path: str | None = None,
+        mailbox_dir: str | None = None,
+    ) -> None:
         async with self._lock:
             self._team_name = team_name
             self._team_members_meta = members
-        await self._broadcast({"type": "team_meta", "team_name": team_name, "members": members})
+            self._team_config_path = config_path
+            self._team_mailbox_dir = mailbox_dir
+        await self._broadcast(
+            {
+                "type": "team_meta",
+                "team_name": team_name,
+                "members": members,
+                "config_path": config_path,
+                "mailbox_dir": mailbox_dir,
+            }
+        )
 
     # ---------------- trace records ----------------
 
@@ -180,6 +199,8 @@ class TraceStore:
             return {
                 "team_name": self._team_name,
                 "team_members": self._team_members_meta,
+                "team_config_path": self._team_config_path,
+                "team_mailbox_dir": self._team_mailbox_dir,
                 "agents": {n: asdict(m) for n, m in self._agents.items()},
                 "traces": {n: list(t) for n, t in self._traces.items()},
                 "mailbox": {n: list(e) for n, e in self._mailbox.items()},

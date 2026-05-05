@@ -7,7 +7,9 @@ License-Expression: MIT
 Keywords: claude,claude-code,agent-teams,swarm,trace,proxy
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: aiohttp<4,>=3.9
+Dynamic: license-file
 
 # teams-view
 

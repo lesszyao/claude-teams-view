@@ -170,6 +170,14 @@ if not agents.get("alice", {}).get("prompt"):
 if agents.get("team-lead", {}).get("is_lead") is not True:
     errs.append("team-lead.is_lead != True")
 
+# --- team config / mailbox paths surfaced in snapshot for the viewer ---
+cfg_path = snap.get("team_config_path") or ""
+mb_dir = snap.get("team_mailbox_dir") or ""
+if not cfg_path.endswith("/teams/smoke-team/config.json"):
+    errs.append(f"team_config_path missing or wrong: {cfg_path!r}")
+if not mb_dir.endswith("/teams/smoke-team/inboxes"):
+    errs.append(f"team_mailbox_dir missing or wrong: {mb_dir!r}")
+
 # --- watcher must NOT pick the stale team (1-hour-old mtime). ghost member
 #     should never appear in agents and must not show up as the active team. ---
 if "ghost" in agents:
@@ -209,6 +217,7 @@ if errs:
 print("PASS: trace partitioning correct (team-lead:1 alice:2)")
 print("PASS: team_watcher loaded smoke-team and propagated alice.prompt")
 print("PASS: stale team-config (1-hour-old mtime) was correctly ignored")
+print(f"PASS: team_config_path + team_mailbox_dir surfaced ({cfg_path!r})")
 print(f"PASS: mailbox alice:  {len(alice_in)} in / {len(alice_out)} out")
 print(f"PASS: mailbox lead:   {len(lead_in)} in / {len(lead_out)} out")
 print(f"PASS: protocol classification ({proto_in[0]['protocol_type']})")
