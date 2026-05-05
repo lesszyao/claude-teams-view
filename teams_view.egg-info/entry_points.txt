@@ -1,0 +1,3 @@
+[console_scripts]
+teams-view = teams_view.cli:main
+teams-view-shim = teams_view.shim:main

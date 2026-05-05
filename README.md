@@ -1,0 +1,141 @@
+# teams-view
+
+Per-teammate visibility for **Claude Code agent teams**.
+
+`teams-view` solves that:
+
+- A **reverse proxy** that tags every API request with the teammate name (via URL path prefix `/agent/<name>/...`) — no header sniffing, no PID lookup tricks, no ambiguity.
+- A **web viewer** with a sidebar of all teammates (color, model, task prompt, request count, token usage) and a switchable per-member trace stream that updates live via SSE.
+- A **shim** that hooks Claude Code's `CLAUDE_CODE_TEAMMATE_COMMAND` extension point so identity flows automatically as the leader spawns each teammate — no source patches required.
+
+## How it works
+
+```
+┌─────────────────── teams-view ────────────────────┐
+│  Reverse Proxy :auto      Web Viewer :auto        │
+│        │                          ▲               │
+│        ▼                          │ SSE           │
+│   path /agent/<name>/v1/messages  │               │
+│   ──> api.anthropic.com           │               │
+│                                                   │
+│   TraceStore: { agent → [traces] }                │
+└─────────┬─────────────────────────────────────────┘
+          │ exec
+          ▼
+   leader claude
+   ANTHROPIC_BASE_URL=http://127.0.0.1:P/agent/team-lead
+   CLAUDE_CODE_TEAMMATE_COMMAND=<shim>
+          │
+          │ tmux split + send-keys (claude internals)
+          ▼
+   shim --agent-name css-architect --team-name X ...
+   (rewrites BASE_URL → /agent/css-architect, execs real claude)
+          ▼
+   teammate claude (css-architect)
+```
+
+The two hooks that make this clean:
+
+1. `CLAUDE_CODE_TEAMMATE_COMMAND` — Claude Code respects this env var as the binary to invoke when spawning teammates. We point it at our shim. ([source: `src/utils/swarm/spawnUtils.ts`](https://github.com/anthropics/claude-code))
+2. `ANTHROPIC_BASE_URL` accepts a path prefix, so `http://127.0.0.1:8080/agent/css-architect` results in requests like `POST /agent/css-architect/v1/messages` — the agent name lives in the URL.
+
+## Install
+
+```bash
+# from this directory
+pip install -e .
+# or
+uv pip install -e .
+```
+
+This installs two console scripts: `teams-view` (the launcher) and `teams-view-shim` (the wrapper Claude Code spawns). You don't run the shim directly.
+
+## Use
+
+**You don't need to start tmux yourself.** Just open any plain terminal (iTerm2, Terminal.app, anything) and run:
+
+```bash
+teams-view -- --dangerously-skip-permissions
+```
+
+By default teams-view clears `TMUX` / `TMUX_PANE` from the leader's env, so Claude Code's `TmuxBackend` falls into its "outside tmux" branch — it spawns each teammate in a **detached private tmux session** (on socket `claude-swarm-<leader_pid>`) that never appears in your terminal. You watch everything in the web viewer instead. The system still needs `tmux` installed (Claude Code itself uses it as a subprocess), but you never have to interact with it.
+
+Common flags:
+
+```bash
+# pass flags through to claude
+teams-view -- --dangerously-skip-permissions
+
+# pin the proxy port and viewer port
+teams-view --port 8080 --viewer-port 8081
+
+# point at a custom Anthropic-compatible gateway (deepseek, ccr, etc.)
+teams-view --target https://api.deepseek.com/anthropic -- --dangerously-skip-permissions
+
+# keep teammate panes splitting your current tmux window (old behaviour)
+teams-view --tmux-leader
+
+# only run proxy + viewer; you start claude yourself in another terminal
+teams-view --no-launch
+# then in your other shell:
+#   export ANTHROPIC_BASE_URL=http://127.0.0.1:<port>/agent/team-lead
+#   export CLAUDE_CODE_TEAMMATE_COMMAND=$(which teams-view-shim)
+#   export _TEAMS_VIEW_REAL_CLAUDE=$(which claude)
+#   claude
+```
+
+The viewer opens at the printed URL. Click any teammate on the left to switch the trace stream.
+
+If you ever want to peek at the raw teammate terminal output (e.g. to interact with a stuck teammate), the detached swarm session is reachable via:
+
+```bash
+tmux -L claude-swarm-<leader_pid> attach -t claude-swarm
+```
+
+Find `<leader_pid>` from `pgrep -af claude` or the teams-view startup log.
+
+## What you see
+
+**Sidebar** (per teammate, sorted by lead → joined order):
+- Color dot, name, `LEAD` badge if applicable
+- Model (e.g. `opus-4-7`), request count, token usage
+- Live "idle pulse" (green if a request happened in the last 5s)
+
+**Detail pane**:
+- Identity card: name, type, model, color, tmux pane id, cwd, totals
+- **Task / Initial Prompt** — the kickoff prompt the leader wrote into this teammate's mailbox at spawn time (read from `~/.claude/teams/<team>/config.json`)
+- **Filter input** — text-search inside this teammate's timeline
+- **Toggles**: hide protocol messages (permission/shutdown/plan JSON), hide historical messages (those that already existed when teams-view started)
+- **Unified timeline** — trace records and mailbox events interleaved by timestamp:
+  - Trace rows show turn #, method, status, model, in/out tokens, duration. Click to expand into Request / Response / Headers / Raw JSON tabs (rendered `system`, `messages`, `tool_use`, `tool_result`).
+  - Mailbox events show direction (◀ incoming purple / ▶ outgoing cyan), peer name with color dot, summary preview, time, and a `protocol` tag for system messages. Click to expand the full message text.
+
+This means you can see "leader sent kickoff prompt → css-architect woke up and made API call A → css-architect sent progress update back → leader replied → ...".
+
+## Files written
+
+```
+./.teams-view/<YYYYMMDD_HHMMSS>/
+├── agents.jsonl              # one line per agent_seen / meta update
+├── traces/
+│   ├── team-lead.jsonl       # one trace record per HTTP request
+│   ├── css-architect.jsonl
+│   └── ...
+└── mailbox/
+    ├── team-lead.jsonl       # one entry per inbox event (in + out, fanned-out)
+    ├── css-architect.jsonl
+    └── ...
+```
+
+Each record is self-contained JSON, identical to what the live viewer received over SSE.
+
+## Limits / caveats
+
+- **Only reverse proxy mode**. No forward proxy / `HTTPS_PROXY` mode. Anthropic OAuth + `ANTHROPIC_BASE_URL` is the supported auth path.
+- **Current team only**. We pick the team whose members appear in proxy traffic; if you swap teams mid-session, only the most recent active one renders in the sidebar's "task prompts" section. Past traces stay in the per-agent JSONL files.
+- **In-process subagents** (Task tool, not full agent-team teammates) are **not** separate panes and share the leader's process. Their HTTP traffic shows up under `team-lead` because they reuse the parent process's `ANTHROPIC_BASE_URL`. This is a Claude Code architectural property, not a teams-view bug — if you need to separate them, that's a different tool.
+- **No team topology graph yet**, no multi-team switcher, no token cost estimation in $. Coming in future iterations.
+
+## License
+
+MIT
